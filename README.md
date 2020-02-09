@@ -1,10 +1,12 @@
 # QuickAccess
 
-![demo](demo.gif)
-
 QuickAccess (QA) is a tiny app written in Go.
 It serves one purpose: to create a quick access menu in your terminal.
 Menu items are basically shortcuts to shell command.
+
+Type `qa` in your terminal to bring up the menu:
+
+![demo](demo.gif)
 
 You can use this app to:
 
