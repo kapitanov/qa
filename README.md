@@ -33,6 +33,37 @@ make
 go get -u github.com/kapitanov/qa
 ```
 
+### Downloading pre-built binaries
+
+* For Linux/x64:
+
+  ```shell
+  curl -L https://github.com/kapitanov/qa/releases/download/v0.1/qa-0.1-linux-x64.zip -o qa.zip
+  unzip qa.zip -d /usr/local/bin/
+  chmod +x /usr/local/bin/qa
+  rm qa.zip
+  ```
+
+* For Windows/x64:
+
+  ```powershell
+  $QA_URL = "https://github.com/kapitanov/qa/releases/download/v0.1/qa-0.1-windows-x64.zip"
+  (New-Object System.Net.WebClient).DownloadFile($QA_URL, "qa.zip")
+  $QA_DIR = join-path $env:LOCALAPPDATA "QA-App"
+  Expand-Archive qa.zip -d $QA_DIR
+  $envPath = Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH
+  $envPath = "$envPath;$QA_DIR"
+  Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Environment' -Name PATH -Value $envPath
+  $env:PATH = "$env:PATH;$QA_DIR"
+  Rm qa.zip
+  ```
+
+  > **Note:** you might need to restart your computer for `PATH` changes to take effect.
+  > If you have [chocolatey](https://chocolatey.org/) installed, you can run `refreshenv` script.
+  > It'll apply `PATH` changes without restarting.
+
+After that, you should be able to execute a `qa` command in your terminal.
+
 ## Configuring
 
 You need to create a JSON file `.qa` in your home directory with the following content:
