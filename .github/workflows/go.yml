@@ -29,6 +29,8 @@ jobs:
     - name: Make
       run: |
         pwd
+        cd ./src/github.com/${{ github.repository }}
+        pwd
         echo ${HOME}
         echo ${GITHUB_WORKSPACE}
         echo ${GOPATH}
