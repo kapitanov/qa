@@ -7,15 +7,40 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"syscall"
 )
 
 func (t *commandConfig) execute() error {
-	cmd := &exec.Cmd{
-		Path: t.Command,
-		Args: append([]string{t.Command}, t.Arguments...),
+	command, err := exec.LookPath(t.Command)
+	if err != nil {
+		errorMessage := fmt.Sprintf("Unable to locate executable \"%s\" in PATH", t.Command)
+		return fmt.Errorf(errorMessage)
 	}
+
+	os.Stderr.Sync()
+	cmd := &exec.Cmd{
+		Path: command,
+		Args: append([]string{command}, t.Arguments...),
+	}
+
 	log.Printf("+ '%s' %s", cmd.Path, cmd.Args)
-	err := cmd.Run()
+	err = cmd.Run()
+
+	if err == nil {
+		log.Printf("%s exited with %d", cmd.Path, 0)
+		return nil
+	}
+
+	if exiterr, ok := err.(*exec.ExitError); ok {
+		if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+			exitCode := status.ExitStatus()
+			log.Printf("%s exited with %d", cmd.Path, exitCode)
+			os.Exit(exitCode)
+			return nil
+		}
+	}
+
+	log.Printf("< %s", err)
 	return err
 }
 
