@@ -40,7 +40,7 @@ go get -u github.com/kapitanov/qa
 * For Linux/x64:
 
   ```shell
-  curl -L https://github.com/kapitanov/qa/releases/download/v0.1/qa-0.1-linux-x64.zip -o qa.zip
+  curl -L https://github.com/kapitanov/qa/releases/download/v0.2.0/qa-0.2.0-linux-x64.zip -o qa.zip
   unzip qa.zip -d /usr/local/bin/
   chmod +x /usr/local/bin/qa
   rm qa.zip
@@ -49,7 +49,7 @@ go get -u github.com/kapitanov/qa
 * For Windows/x64:
 
   ```powershell
-  $QA_URL = "https://github.com/kapitanov/qa/releases/download/v0.1/qa-0.1-windows-x64.zip"
+  $QA_URL = "https://github.com/kapitanov/qa/releases/download/v0.2.0/qa-0.2.0-windows-x64.zip"
   (New-Object System.Net.WebClient).DownloadFile($QA_URL, "qa.zip")
   $QA_DIR = join-path $env:LOCALAPPDATA "QA-App"
   Expand-Archive qa.zip -d $QA_DIR
