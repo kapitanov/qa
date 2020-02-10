@@ -92,3 +92,9 @@ Its items map are menu items. Their properties are:
 * `name` - a menu item title (required element)
 * `cmd` - a command to run (required element)
 * `args` - a list of command's arguments (optional)
+
+You can use environment variables in `cmd` and `args`, including:
+
+* `~` and `$HOME` for current user's home directory
+* `$(pwd)` for current directory
+* `$ENV_VAR_NAME` for enviroment variable `ENV_VAR_NAME`

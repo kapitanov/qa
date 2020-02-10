@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"runtime"
 	"strings"
 )
 
@@ -51,11 +52,12 @@ func (cmd *commandConfig) validate() error {
 }
 
 func init() {
-	var err error
-	homeDir, err = os.UserHomeDir()
-	if err != nil {
-		panic(err)
+	env := "HOME"
+	switch runtime.GOOS {
+	case "windows":
+		env = "USERPROFILE"
 	}
+	homeDir := os.Getenv(env)
 
 	defaultConfigPath = path.Join(homeDir, ".qa")
 
@@ -89,7 +91,6 @@ func loadConfig() ([]*commandConfig, error) {
 	}
 
 	if commands == nil {
-		//createEmptyConfig(defaultConfigPath)
 		fmt.Fprintf(os.Stderr, "Config file \"%s\" doesn't exist\n", defaultConfigPath)
 		fmt.Fprintf(os.Stderr, "Create config file and add commands you need\n")
 		fmt.Fprintf(os.Stderr, "Here is an example of config file content:\n%s\n", configTemplate)
@@ -109,8 +110,15 @@ func loadConfig() ([]*commandConfig, error) {
 }
 
 func substEnv(str string) string {
-	str = strings.ReplaceAll(str, "~", homeDir)
-	str = strings.ReplaceAll(str, "$HOME", homeDir)
+	str = strings.Replace(str, "~", homeDir, -1)
+	str = strings.Replace(str, "$HOME", homeDir, -1)
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		str = strings.Replace(str, "$(pwd)", cwd, -1)
+	}
+
+	str = os.ExpandEnv(str)
 	return str
 }
 
@@ -158,8 +166,7 @@ const configTemplate = `{
     "commands" :[
         {
             "name":"Command display name",
-            "cmd" :"command_to_execute",
-            "args" : ["list","of","arguments"]
+            "cmd" :"command_to_execute"
         },
         {
             "name":"Command display name",
