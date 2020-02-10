@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gdamore/tcell"
 )
@@ -28,47 +29,37 @@ func runUI(items []*commandConfig) (*commandConfig, error) {
 
 	selectedIndex := 0
 
-	for {
-		// Render UI
-		screen.Clear()
-		writeUILine(screen, activeStyle, 0, "Select a command to run:")
-		for i, item := range items {
-			item.render(screen, i+2, i == selectedIndex)
-		}
-		_, height := screen.Size()
-		writeUILine(screen, activeStyle, height-1, "Use arrow keys to navigate, <Enter> to select and <Esc> to exit")
-		screen.Show()
+	renderFrame(screen, items, selectedIndex)
 
+	for {
 		// Handle an event
 		ev := screen.PollEvent()
 		switch ev := ev.(type) {
+		case *tcell.EventResize:
+			renderFrame(screen, items, selectedIndex)
+			break
+
 		case *tcell.EventKey:
 			switch ev.Key() {
 
 			// Arrow up
 			case tcell.KeyUp:
-				selectedIndex--
-				if selectedIndex < 0 {
-					selectedIndex = 0
-				}
+				selectedIndex = moveSelectionTo(screen, items, selectedIndex, selectedIndex-1)
 				break
 
 			// Arrow down
 			case tcell.KeyDown:
-				selectedIndex++
-				if selectedIndex >= len(items) {
-					selectedIndex = len(items) - 1
-				}
+				selectedIndex = moveSelectionTo(screen, items, selectedIndex, selectedIndex+1)
 				break
 
 			// Home
 			case tcell.KeyHome:
-				selectedIndex = 0
+				selectedIndex = moveSelectionTo(screen, items, selectedIndex, 0)
 				break
 
 			// End
 			case tcell.KeyEnd:
-				selectedIndex = len(items) - 1
+				selectedIndex = moveSelectionTo(screen, items, selectedIndex, len(items)-1)
 				break
 
 			// Enter
@@ -91,15 +82,50 @@ func runUI(items []*commandConfig) (*commandConfig, error) {
 	}
 }
 
+func renderFrame(screen tcell.Screen, items []*commandConfig, selectedIndex int) {
+	screen.Clear()
+	writeUILine(screen, activeStyle, 0, "Select a command to run:")
+	for i, item := range items {
+		item.render(screen, i+2, i == selectedIndex)
+	}
+	_, height := screen.Size()
+	writeUILine(screen, activeStyle, height-1, "Use arrow keys to navigate, <Enter> to select and <Esc> to exit")
+	screen.Show()
+}
+
+func moveSelectionTo(screen tcell.Screen, items []*commandConfig, selectedIndex int, newIndex int) int {
+	if newIndex < 0 {
+		newIndex = 0
+	}
+
+	if newIndex >= len(items) {
+		newIndex = len(items) - 1
+	}
+
+	if newIndex != selectedIndex {
+		items[selectedIndex].render(screen, selectedIndex+2, false)
+		items[newIndex].render(screen, newIndex+2, true)
+
+		screen.Show()
+	}
+
+	return newIndex
+}
+
 func (t *commandConfig) render(screen tcell.Screen, line int, selected bool) {
+	width, _ := screen.Size()
+	width -= 4
+
+	text := t.Name + strings.Repeat(" ", width-len(t.Name))
+	text = text[0:width]
+
 	var style tcell.Style
-	var text string
 	if selected {
 		style = activeStyle
-		text = fmt.Sprintf("[x] %s", t.Name)
+		text = fmt.Sprintf("> %s <", text)
 	} else {
 		style = normalStyle
-		text = fmt.Sprintf("[ ] %s", t.Name)
+		text = fmt.Sprintf("  %s  ", text)
 	}
 
 	writeUILine(screen, style, line, text)
